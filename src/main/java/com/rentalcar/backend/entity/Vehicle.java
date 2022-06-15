@@ -14,7 +14,7 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString
+@ToString(exclude = "reservations")
 @JsonIgnoreProperties("reservations")
 @Entity
 @Table(name = "vehicles")
@@ -42,7 +42,6 @@ public class Vehicle implements Serializable {
     @Column(name = "type")
     private String type;
 
-    @ToString.Exclude
     @OneToMany(
             mappedBy = "vehicle",
             fetch = FetchType.LAZY,

@@ -12,7 +12,7 @@ import java.time.LocalDate;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString
+@ToString(exclude = {"user", "vehicle"})
 @Entity
 @Table(name = "reservations")
 public class Reservation implements Serializable {
@@ -33,12 +33,10 @@ public class Reservation implements Serializable {
     @Column(name = "status")
     private ReservationStatus status;
 
-    @ToString.Exclude
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
 
-    @ToString.Exclude
     @ManyToOne
     @JoinColumn(name = "vehicle_id")
     private Vehicle vehicle;

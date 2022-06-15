@@ -10,10 +10,9 @@ import java.util.List;
 
 @Getter
 @Setter
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString
+@ToString(exclude = "reservations")
 @JsonIgnoreProperties("reservations")
 @Entity
 @Table(name = "users")
@@ -39,7 +38,6 @@ public class User implements Serializable {
     @Column(name = "password")
     private String password;
 
-    @ToString.Exclude
     @OneToMany(
             mappedBy = "user",
             fetch = FetchType.LAZY,
