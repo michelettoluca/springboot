@@ -1,51 +1,98 @@
 package com.rentalcar.backend.controller;
 
+import com.rentalcar.backend.dto.request.UserSaveRequest;
+import com.rentalcar.backend.dto.response.UserBaseResponse;
 import com.rentalcar.backend.entity.User;
+import com.rentalcar.backend.mapper.UserMapper;
 import com.rentalcar.backend.service.UserService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping(value = "users")
 public class UserController {
 
     private final UserService userService;
 
-    public UserController(
-            UserService userService
+    @RequestMapping(method = RequestMethod.GET)
+    public ResponseEntity<List<UserBaseResponse>> getAll() {
+        List<User> users = this.userService.findAll();
+
+        return new ResponseEntity<>(
+                users
+                        .stream()
+                        .map(UserMapper::toBaseUserResponse)
+                        .collect(Collectors.toList()),
+                HttpStatus.OK
+        );
+    }
+
+    @RequestMapping(method = RequestMethod.POST)
+    public ResponseEntity<UserBaseResponse> create(
+            @RequestBody UserSaveRequest data
     ) {
-        this.userService = userService;
+        User tmpUser = this.userService.create(data);
+
+        return new ResponseEntity<>(
+                UserMapper.toBaseUserResponse(tmpUser),
+                HttpStatus.OK
+        );
     }
 
-    @GetMapping
-    public ResponseEntity<List<User>> getUsers() {
-        ResponseEntity<List<User>> response;
+    @RequestMapping(value = "by/id/{id}", method = RequestMethod.PUT)
+    public ResponseEntity<UserBaseResponse> edit(
+            @PathVariable("id") Integer id,
+            @RequestBody UserSaveRequest data
+    ) {
+        User user = this.userService.edit(id, data);
 
-        List<User> users = userService.findAll();
-        response = new ResponseEntity<>(users, HttpStatus.OK);
-
-        return response;
+        return new ResponseEntity<>(
+                UserMapper.toBaseUserResponse(user),
+                HttpStatus.OK
+        );
     }
 
-    @GetMapping("{id}")
-    @ResponseBody
-    public ResponseEntity<Optional<User>> getUserById(
+    @RequestMapping(value = "by/id/{id}", method = RequestMethod.DELETE)
+    public ResponseEntity<String> deleteOne(
             @PathVariable("id") Integer id
     ) {
-        ResponseEntity<Optional<User>> response;
+        this.userService.deleteOneById(id);
 
-        Optional<User> user = userService.findById(id);
+        return new ResponseEntity<>(
+                "User deleted",
+                HttpStatus.OK
+        );
+    }
 
-        response = user.isPresent()
-                ? new ResponseEntity<>(user, HttpStatus.OK)
-                : new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    @RequestMapping(value = "by/{attribute}/{value}", method = RequestMethod.GET)
+    public ResponseEntity<UserBaseResponse> getOne(
+            @PathVariable("attribute") String attribute,
+            @PathVariable("value") String value
+    ) {
+        User user;
 
-//        TODO: Dto -> BeanUtils.copyProperties();
+        switch (attribute) {
+            case "id":
+                user = this.userService.findOneById(Integer.parseInt(value));
+                break;
 
-        return response;
+            case "username":
+                user = this.userService.findOneByUsername(value);
+                break;
+
+            default:
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        return new ResponseEntity<>(
+                UserMapper.toBaseUserResponse(user),
+                HttpStatus.OK
+        );
     }
 }

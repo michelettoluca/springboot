@@ -1,6 +1,5 @@
 package com.rentalcar.backend.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.rentalcar.backend.type.UserRole;
 import lombok.*;
 
@@ -13,7 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString(exclude = "reservations")
-@JsonIgnoreProperties("reservations")
+//@JsonIgnoreProperties("reservations")
 @Entity
 @Table(name = "users")
 public class User implements Serializable {

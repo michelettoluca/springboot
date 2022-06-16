@@ -1,29 +1,20 @@
 package com.rentalcar.backend.service;
 
+import com.rentalcar.backend.dto.request.UserSaveRequest;
 import com.rentalcar.backend.entity.User;
-import com.rentalcar.backend.repository.user.JpaUserRepository;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
-@Service
-public class UserService {
-    private final JpaUserRepository userRepository;
+public interface UserService {
+    List<User> findAll();
 
-    public UserService(JpaUserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
+    User findOneById(Integer id);
 
-    public List<User> findAll() {
-        return userRepository.findAll();
-    }
+    void deleteOneById(Integer id);
 
-    public Optional<User> findById(Integer id) {
-        return userRepository.findById(id);
-    }
+    User findOneByUsername(String username);
 
-    public User aa(Integer id) {
-        return this.userRepository.asd(id);
-    }
+    User create(UserSaveRequest data);
+
+    User edit(Integer id, UserSaveRequest data);
 }

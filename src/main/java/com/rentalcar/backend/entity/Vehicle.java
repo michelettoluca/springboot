@@ -1,6 +1,5 @@
 package com.rentalcar.backend.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.sun.istack.NotNull;
 import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -15,7 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString(exclude = "reservations")
-@JsonIgnoreProperties("reservations")
+//@JsonIgnoreProperties("reservations")
 @Entity
 @Table(name = "vehicles")
 
@@ -31,13 +30,13 @@ public class Vehicle implements Serializable {
     @Column(name = "model")
     private String model;
 
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-    @Column(name = "date_of_registration")
-    private LocalDate dateOfRegistration;
-
     @NotNull
     @Column(name = "plate_number", unique = true)
     private String plateNumber;
+    
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    @Column(name = "date_of_registration")
+    private LocalDate dateOfRegistration;
 
     @Column(name = "type")
     private String type;

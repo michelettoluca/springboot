@@ -1,20 +1,23 @@
 package com.rentalcar.backend.service;
 
+import com.rentalcar.backend.dto.request.VehicleSaveRequest;
 import com.rentalcar.backend.entity.Vehicle;
-import com.rentalcar.backend.repository.vehicle.JpaVehicleRepository;
-import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
-@Service
-public class VehicleService {
-    private final JpaVehicleRepository vehicleRepository;
+public interface VehicleService {
+    List<Vehicle> findAll();
 
-    public VehicleService(JpaVehicleRepository vehicleRepository) {
-        this.vehicleRepository = vehicleRepository;
-    }
+    List<Vehicle> findAvailable(LocalDate from, LocalDate to);
 
-    public List<Vehicle> findAll() {
-        return vehicleRepository.findAll();
-    }
+    Vehicle findOneById(Integer id);
+
+    void deleteOneById(Integer id);
+
+    Vehicle findOneByPlateNumber(String username);
+
+    Vehicle create(VehicleSaveRequest data);
+
+    Vehicle edit(Integer id, VehicleSaveRequest data);
 }
