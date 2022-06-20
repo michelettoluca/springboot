@@ -6,8 +6,10 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
+@Service
 public class UserDetailsServiceImpl implements UserDetailsService {
 
     private final UserService userService;
@@ -20,8 +22,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
         String[] roles = new String[]{"ROLE_" + user.getRole()};
 
-        return User
-                .withUsername(user.getUsername())
+        return User.withUsername(user.getUsername())
                 .password(user.getPassword())
 //                .disabled(user.isActive())
                 .disabled(false)

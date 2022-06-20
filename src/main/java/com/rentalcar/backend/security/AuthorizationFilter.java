@@ -1,13 +1,13 @@
 package com.rentalcar.backend.security;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.auth0.jwt.interfaces.JWTVerifier;
+import com.rentalcar.backend.util.JWTUtils;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -15,11 +15,14 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
+@RequiredArgsConstructor
+@Component
 public class AuthorizationFilter extends OncePerRequestFilter {
+
+    private final JWTUtils jwtUtils;
 
     @Override
     protected void doFilterInternal(
@@ -32,24 +35,26 @@ public class AuthorizationFilter extends OncePerRequestFilter {
 
             if (authorizationHeader != null && authorizationHeader.startsWith("Bearer")) {
                 try {
-
                     String token = authorizationHeader.substring("Bearer ".length());
 
-//                    TODO: Importare il segreto dal .application
-                    Algorithm algorithm = Algorithm.HMAC256("secret");
-                    JWTVerifier verifier = JWT.require(algorithm).build();
-                    DecodedJWT decodedJWT = verifier.verify(token);
-                    String username = decodedJWT.getSubject();
-                    String[] roles = decodedJWT.getClaim("role").asArray(String.class);
+                    DecodedJWT decodedJWT = this.jwtUtils.decode(token);
 
-                    Collection<SimpleGrantedAuthority> authorities = Arrays.stream(roles)
-                            .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
+                    String username = decodedJWT.getSubject();
+                    Integer id = decodedJWT.getClaim("id").asInt();
+
+                    Collection<SimpleGrantedAuthority> authorities = decodedJWT
+                            .getClaim("roles")
+                            .asList(String.class)
+                            .stream()
+                            .map(SimpleGrantedAuthority::new)
                             .collect(Collectors.toList());
 
                     UsernamePasswordAuthenticationToken authenticationToken =
-                            new UsernamePasswordAuthenticationToken(username, null, authorities);
+                            new UsernamePasswordAuthenticationToken(username, id, authorities);
 
-                    SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                    SecurityContextHolder
+                            .getContext()
+                            .setAuthentication(authenticationToken);
                 } catch (Exception e) {
                     System.out.println(e);
                 }

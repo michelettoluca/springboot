@@ -43,7 +43,7 @@ public class UserMapper {
 
     public static User toUserEntity(UserSaveRequest data) {
         User user = new User();
-        
+
         user.setFirstName(data.getFirstName());
         user.setLastName(data.getLastName());
         user.setUsername(data.getUsername());

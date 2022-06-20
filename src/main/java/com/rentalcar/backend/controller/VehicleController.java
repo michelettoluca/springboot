@@ -3,6 +3,7 @@ package com.rentalcar.backend.controller;
 import com.rentalcar.backend.dto.request.VehicleSaveRequest;
 import com.rentalcar.backend.dto.response.VehicleBaseResponse;
 import com.rentalcar.backend.entity.Vehicle;
+import com.rentalcar.backend.mapper.Mapper;
 import com.rentalcar.backend.mapper.VehicleMapper;
 import com.rentalcar.backend.service.VehicleService;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @RestController
@@ -21,20 +21,17 @@ public class VehicleController {
 
     private final VehicleService vehicleService;
 
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public ResponseEntity<List<VehicleBaseResponse>> listVehicles() {
         List<Vehicle> vehicles = vehicleService.findAll();
 
         return new ResponseEntity<>(
-                vehicles
-                        .stream()
-                        .map(VehicleMapper::toBaseVehicleResponse)
-                        .collect(Collectors.toList()),
+                Mapper.toList(vehicles, VehicleMapper::toBaseVehicleResponse),
                 HttpStatus.OK
         );
     }
 
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping
     public ResponseEntity<VehicleBaseResponse> create(
             @RequestBody VehicleSaveRequest data
     ) {
@@ -46,7 +43,7 @@ public class VehicleController {
         );
     }
 
-    @RequestMapping(value = "available", method = RequestMethod.GET)
+    @GetMapping(value = "available")
     public ResponseEntity<List<VehicleBaseResponse>> findAvailable(
             @RequestParam("from") LocalDate from,
             @RequestParam("to") LocalDate to
@@ -54,14 +51,11 @@ public class VehicleController {
         List<Vehicle> vehicles = vehicleService.findAvailable(from, to);
 
         return new ResponseEntity<>(
-                vehicles
-                        .stream()
-                        .map(VehicleMapper::toBaseVehicleResponse)
-                        .collect(Collectors.toList()),
+                Mapper.toList(vehicles, VehicleMapper::toBaseVehicleResponse),
                 HttpStatus.OK);
     }
 
-    @RequestMapping(value = "by/id/{id}", method = RequestMethod.PUT)
+    @PutMapping(value = "by/id/{id}")
     public ResponseEntity<VehicleBaseResponse> edit(
             @PathVariable("id") Integer id,
             @RequestBody VehicleSaveRequest data
@@ -74,7 +68,7 @@ public class VehicleController {
         );
     }
 
-    @RequestMapping(value = "by/id/{id}", method = RequestMethod.DELETE)
+    @DeleteMapping(value = "by/id/{id}")
     public ResponseEntity<String> deleteOne(
             @PathVariable("id") Integer id
     ) {
@@ -86,7 +80,7 @@ public class VehicleController {
         );
     }
 
-    @RequestMapping(value = "by/{attribute}/{value}", method = RequestMethod.GET)
+    @GetMapping(value = "by/{attribute}/{value}")
     public ResponseEntity<VehicleBaseResponse> getOne(
             @PathVariable("attribute") String attribute,
             @PathVariable("value") String value

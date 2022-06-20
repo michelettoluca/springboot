@@ -3,15 +3,19 @@ package com.rentalcar.backend.controller;
 import com.rentalcar.backend.dto.request.UserSaveRequest;
 import com.rentalcar.backend.dto.response.UserBaseResponse;
 import com.rentalcar.backend.entity.User;
+import com.rentalcar.backend.mapper.Mapper;
 import com.rentalcar.backend.mapper.UserMapper;
 import com.rentalcar.backend.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @RestController
@@ -20,20 +24,19 @@ public class UserController {
 
     private final UserService userService;
 
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public ResponseEntity<List<UserBaseResponse>> getAll() {
+        SecurityContextHolder.getContext().getAuthentication();
+
         List<User> users = this.userService.findAll();
 
         return new ResponseEntity<>(
-                users
-                        .stream()
-                        .map(UserMapper::toBaseUserResponse)
-                        .collect(Collectors.toList()),
+                Mapper.toList(users, UserMapper::toBaseUserResponse),
                 HttpStatus.OK
         );
     }
 
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping
     public ResponseEntity<UserBaseResponse> create(
             @RequestBody UserSaveRequest data
     ) {
@@ -45,11 +48,21 @@ public class UserController {
         );
     }
 
-    @RequestMapping(value = "by/id/{id}", method = RequestMethod.PUT)
+    @PutMapping(value = "by/id/{id}")
     public ResponseEntity<UserBaseResponse> edit(
             @PathVariable("id") Integer id,
-            @RequestBody UserSaveRequest data
+            @RequestBody UserSaveRequest data,
+            @AuthenticationPrincipal UserDetails userDetails
     ) {
+
+//        if (authenticatedUser.isCustomer() && authenticatedUser.getId().equals(id)) {
+//            throw new RuntimeException();
+//        }
+//
+//        if (authenticatedUser.isAdmin()) {
+//            System.out.println("--- ADMIN ---");
+//        }
+
         User user = this.userService.edit(id, data);
 
         return new ResponseEntity<>(
@@ -58,10 +71,18 @@ public class UserController {
         );
     }
 
-    @RequestMapping(value = "by/id/{id}", method = RequestMethod.DELETE)
+    @DeleteMapping(value = "by/id/{id}")
     public ResponseEntity<String> deleteOne(
-            @PathVariable("id") Integer id
+            @PathVariable("id") Integer id,
+            @AuthenticationPrincipal UserDetails userDetails
     ) {
+        if (!userDetails
+                .getAuthorities()
+                .contains(new SimpleGrantedAuthority("ROLE_ADMIN"))
+        ) {
+            throw new RuntimeException();
+        }
+
         this.userService.deleteOneById(id);
 
         return new ResponseEntity<>(
@@ -70,7 +91,7 @@ public class UserController {
         );
     }
 
-    @RequestMapping(value = "by/{attribute}/{value}", method = RequestMethod.GET)
+    @GetMapping(value = "by/{attribute}/{value}")
     public ResponseEntity<UserBaseResponse> getOne(
             @PathVariable("attribute") String attribute,
             @PathVariable("value") String value
