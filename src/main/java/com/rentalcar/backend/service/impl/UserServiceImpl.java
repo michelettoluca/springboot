@@ -8,6 +8,7 @@ import com.rentalcar.backend.repository.UserRepository;
 import com.rentalcar.backend.service.UserService;
 import com.rentalcar.backend.type.UserRole;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -17,6 +18,7 @@ import java.util.List;
 @Service
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public List<User> findAll() {
@@ -48,6 +50,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public User create(UserSaveRequest data) {
         User user = UserMapper.toUserEntity(data);
+
+        String encodedPassword = this.passwordEncoder.encode(user.getPassword());
+        user.setPassword(encodedPassword);
 
         if (user.getRole() == null) user.setRole(UserRole.CUSTOMER);
 
