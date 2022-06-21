@@ -30,10 +30,10 @@ public class AuthorizationFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain
     ) throws ServletException, IOException {
-        if (!request.getServletPath().equals("/login")) {
+        if (!request.getServletPath().equals("/auth/login")) {
             String authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
 
-            if (authorizationHeader != null && authorizationHeader.startsWith("Bearer")) {
+            if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
                 try {
                     String token = authorizationHeader.substring("Bearer ".length());
 
@@ -50,7 +50,7 @@ public class AuthorizationFilter extends OncePerRequestFilter {
                             .collect(Collectors.toList());
 
                     UsernamePasswordAuthenticationToken authenticationToken =
-                            new UsernamePasswordAuthenticationToken(username, id, authorities);
+                            new UsernamePasswordAuthenticationToken(username, null, authorities);
 
                     SecurityContextHolder
                             .getContext()

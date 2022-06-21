@@ -5,6 +5,7 @@ import com.rentalcar.backend.dto.response.UserBaseResponse;
 import com.rentalcar.backend.entity.User;
 import com.rentalcar.backend.mapper.Mapper;
 import com.rentalcar.backend.mapper.UserMapper;
+import com.rentalcar.backend.security.AuthenticatedUser;
 import com.rentalcar.backend.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -52,16 +53,16 @@ public class UserController {
     public ResponseEntity<UserBaseResponse> edit(
             @PathVariable("id") Integer id,
             @RequestBody UserSaveRequest data,
-            @AuthenticationPrincipal UserDetails userDetails
+            @AuthenticationPrincipal AuthenticatedUser authenticatedUser
     ) {
 
-//        if (authenticatedUser.isCustomer() && authenticatedUser.getId().equals(id)) {
-//            throw new RuntimeException();
-//        }
-//
-//        if (authenticatedUser.isAdmin()) {
-//            System.out.println("--- ADMIN ---");
-//        }
+        if (authenticatedUser.isCustomer() && authenticatedUser.getId().equals(id)) {
+            throw new RuntimeException();
+        }
+
+        if (authenticatedUser.isAdmin()) {
+            System.out.println("--- ADMIN ---");
+        }
 
         User user = this.userService.edit(id, data);
 
