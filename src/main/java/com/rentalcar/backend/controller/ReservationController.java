@@ -1,5 +1,6 @@
 package com.rentalcar.backend.controller;
 
+import com.rentalcar.backend.dto.AuthenticatedUser;
 import com.rentalcar.backend.dto.request.ReservationSaveRequest;
 import com.rentalcar.backend.dto.response.ReservationFullResponse;
 import com.rentalcar.backend.entity.Reservation;
@@ -9,9 +10,11 @@ import com.rentalcar.backend.service.ReservationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 @RequiredArgsConstructor
 @RestController
@@ -83,8 +86,13 @@ public class ReservationController {
     @PutMapping(value = "by/id/{id}")
     public ResponseEntity<ReservationFullResponse> edit(
             @PathVariable("id") Integer id,
-            @RequestBody ReservationSaveRequest data
+            @RequestBody ReservationSaveRequest data,
+            @AuthenticationPrincipal AuthenticatedUser authenticatedUser
     ) {
+        if (!authenticatedUser.isAdmin() && !Objects.equals(authenticatedUser.getId(), data.getUserId())) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
         Reservation reservation = this.reservationService.edit(id, data);
 
         return new ResponseEntity<>(
@@ -95,8 +103,12 @@ public class ReservationController {
 
     @DeleteMapping(value = "by/id/{id}")
     public ResponseEntity<String> delete(
-            @PathVariable("id") Integer id
+            @PathVariable("id") Integer id,
+            @AuthenticationPrincipal AuthenticatedUser authenticatedUser
     ) {
+        if (!authenticatedUser.isAdmin() && !Objects.equals(authenticatedUser.getId(), id)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
         this.reservationService.deleteOneById(id);
 
         return new ResponseEntity<>(

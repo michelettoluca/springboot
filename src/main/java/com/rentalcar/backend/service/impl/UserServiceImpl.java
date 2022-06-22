@@ -16,6 +16,7 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @Service
+@Transactional
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -34,7 +35,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional
     public void deleteOneById(Integer id) {
         this.userRepository
                 .deleteById(id);
@@ -54,7 +54,7 @@ public class UserServiceImpl implements UserService {
         String encodedPassword = this.passwordEncoder.encode(user.getPassword());
         user.setPassword(encodedPassword);
 
-        if (user.getRole() == null) user.setRole(UserRole.CUSTOMER);
+        if (user.getRole() == null) user.setRole(UserRole.ROLE_CUSTOMER);
 
         return this.userRepository
                 .save(user);
