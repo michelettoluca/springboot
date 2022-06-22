@@ -4,7 +4,6 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.rentalcar.backend.util.JWTUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -15,7 +14,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Collection;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -30,10 +29,10 @@ public class AuthorizationFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain
     ) throws ServletException, IOException {
-        if (!request.getServletPath().equals("/auth/login")) {
+        if (!request.getServletPath().equals("/login")) {
             String authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
 
-            if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            if (authorizationHeader != null && authorizationHeader.startsWith("Bearer")) {
                 try {
                     String token = authorizationHeader.substring("Bearer ".length());
 
@@ -42,15 +41,14 @@ public class AuthorizationFilter extends OncePerRequestFilter {
                     String username = decodedJWT.getSubject();
                     Integer id = decodedJWT.getClaim("id").asInt();
 
-                    Collection<SimpleGrantedAuthority> authorities = decodedJWT
+                    Set<SimpleGrantedAuthority> authorities = decodedJWT
                             .getClaim("roles")
                             .asList(String.class)
                             .stream()
                             .map(SimpleGrantedAuthority::new)
-                            .collect(Collectors.toList());
+                            .collect(Collectors.toSet());
 
-                    UsernamePasswordAuthenticationToken authenticationToken =
-                            new UsernamePasswordAuthenticationToken(username, null, authorities);
+                    AuthenticatedUserToken authenticationToken = new AuthenticatedUserToken(id, authorities);
 
                     SecurityContextHolder
                             .getContext()

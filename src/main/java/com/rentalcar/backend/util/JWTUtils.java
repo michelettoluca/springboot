@@ -4,13 +4,12 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.JWTVerifier;
-import com.rentalcar.backend.security.AuthenticatedUser;
+import com.rentalcar.backend.dto.response.UserBaseResponse;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
 import java.util.Date;
-import java.util.stream.Collectors;
 
 @Component
 public class JWTUtils {
@@ -25,7 +24,7 @@ public class JWTUtils {
         return verifier.verify(token);
     }
 
-    public String encode(AuthenticatedUser user) {
+    public String encode(UserBaseResponse user) {
 
         Algorithm algorithm = Algorithm.HMAC256(accessTokenSecret);
 
@@ -33,11 +32,7 @@ public class JWTUtils {
                 .create()
                 .withSubject(user.getUsername())
                 .withClaim("id", user.getId())
-                .withClaim("roles", user
-                        .getAuthorities()
-                        .stream()
-                        .map(GrantedAuthority::getAuthority)
-                        .collect(Collectors.toList()))
+                .withClaim("roles", Collections.singletonList(user.getRole().name()))
                 .withExpiresAt(new Date(System.currentTimeMillis() + 60 * 60 * 1000))
                 .sign(algorithm);
     }
