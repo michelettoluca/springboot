@@ -20,7 +20,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
         if (user == null) throw new UsernameNotFoundException("User not found");
 
-        String[] roles = new String[]{"ROLE_" + user.getRole()};
+        String[] roles = new String[]{user.getRole().name()};
 
         return User.withUsername(user.getUsername())
                 .password(user.getPassword())

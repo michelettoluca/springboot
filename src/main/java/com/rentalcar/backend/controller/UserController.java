@@ -1,5 +1,6 @@
 package com.rentalcar.backend.controller;
 
+import com.rentalcar.backend.dto.AuthenticatedUser;
 import com.rentalcar.backend.dto.request.UserSaveRequest;
 import com.rentalcar.backend.dto.response.UserBaseResponse;
 import com.rentalcar.backend.entity.User;
@@ -10,12 +11,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 @RequiredArgsConstructor
 @RestController
@@ -40,10 +40,10 @@ public class UserController {
     public ResponseEntity<UserBaseResponse> create(
             @RequestBody UserSaveRequest data
     ) {
-        User tmpUser = this.userService.create(data);
+        User user = this.userService.create(data);
 
         return new ResponseEntity<>(
-                UserMapper.toBaseUserResponse(tmpUser),
+                UserMapper.toBaseUserResponse(user),
                 HttpStatus.OK
         );
     }
@@ -52,16 +52,15 @@ public class UserController {
     public ResponseEntity<UserBaseResponse> edit(
             @PathVariable("id") Integer id,
             @RequestBody UserSaveRequest data,
-            @AuthenticationPrincipal UserDetails userDetails
+            @AuthenticationPrincipal AuthenticatedUser authenticatedUser
     ) {
+        if (!authenticatedUser.isAdmin()) {
+            if (!Objects.equals(authenticatedUser.getId(), id)) {
+                return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+            }
 
-//        if (authenticatedUser.isCustomer() && authenticatedUser.getId().equals(id)) {
-//            throw new RuntimeException();
-//        }
-//
-//        if (authenticatedUser.isAdmin()) {
-//            System.out.println("--- ADMIN ---");
-//        }
+            data.setRole(null);
+        }
 
         User user = this.userService.edit(id, data);
 
@@ -74,13 +73,10 @@ public class UserController {
     @DeleteMapping(value = "by/id/{id}")
     public ResponseEntity<String> deleteOne(
             @PathVariable("id") Integer id,
-            @AuthenticationPrincipal UserDetails userDetails
+            @AuthenticationPrincipal AuthenticatedUser authenticatedUser
     ) {
-        if (!userDetails
-                .getAuthorities()
-                .contains(new SimpleGrantedAuthority("ROLE_ADMIN"))
-        ) {
-            throw new RuntimeException();
+        if (!authenticatedUser.isAdmin() && !Objects.equals(authenticatedUser.getId(), id)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
 
         this.userService.deleteOneById(id);

@@ -56,7 +56,7 @@ public class ReservationServiceImpl implements ReservationService {
     public Reservation create(ReservationSaveRequest data) {
         User user = this.userService.findOneById(data.getUserId());
         Vehicle vehicle = this.vehicleService.findOneById(data.getVehicleId());
-
+        
         Reservation reservation = ReservationMapper.toReservationEntity(data, user, vehicle);
 
         return this.reservationRepository
