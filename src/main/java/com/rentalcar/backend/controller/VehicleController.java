@@ -7,6 +7,7 @@ import com.rentalcar.backend.mapper.Mapper;
 import com.rentalcar.backend.mapper.VehicleMapper;
 import com.rentalcar.backend.service.VehicleService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -45,8 +46,8 @@ public class VehicleController {
 
     @GetMapping(value = "available")
     public ResponseEntity<List<VehicleBaseResponse>> findAvailable(
-            @RequestParam("from") LocalDate from,
-            @RequestParam("to") LocalDate to
+            @RequestParam("from") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate from,
+            @RequestParam("to") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate to
     ) {
         List<Vehicle> vehicles = vehicleService.findAvailable(from, to);
 
@@ -69,13 +70,12 @@ public class VehicleController {
     }
 
     @DeleteMapping(value = "by/id/{id}")
-    public ResponseEntity<String> deleteOne(
+    public ResponseEntity<HttpStatus> deleteOne(
             @PathVariable("id") Integer id
     ) {
         this.vehicleService.deleteOneById(id);
 
         return new ResponseEntity<>(
-                "User deleted",
                 HttpStatus.OK
         );
     }

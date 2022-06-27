@@ -29,33 +29,30 @@ public class AuthorizationFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain
     ) throws ServletException, IOException {
-        if (!request.getServletPath().equals("/login")) {
+        if (!request.getServletPath().equals("/auth/login")) {
             String authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
 
             if (authorizationHeader != null && authorizationHeader.startsWith("Bearer")) {
-                try {
-                    String token = authorizationHeader.substring("Bearer ".length());
 
-                    DecodedJWT decodedJWT = this.jwtUtils.decode(token);
+                String token = authorizationHeader.substring("Bearer ".length());
 
-                    String username = decodedJWT.getSubject();
-                    Integer id = decodedJWT.getClaim("id").asInt();
+                DecodedJWT decodedJWT = this.jwtUtils.decode(token);
 
-                    Set<SimpleGrantedAuthority> authorities = decodedJWT
-                            .getClaim("roles")
-                            .asList(String.class)
-                            .stream()
-                            .map(SimpleGrantedAuthority::new)
-                            .collect(Collectors.toSet());
+                String username = decodedJWT.getSubject();
+                Integer id = decodedJWT.getClaim("id").asInt();
 
-                    AuthenticatedUserToken authenticationToken = new AuthenticatedUserToken(id, authorities);
+                Set<SimpleGrantedAuthority> authorities = decodedJWT
+                        .getClaim("roles")
+                        .asList(String.class)
+                        .stream()
+                        .map(SimpleGrantedAuthority::new)
+                        .collect(Collectors.toSet());
 
-                    SecurityContextHolder
-                            .getContext()
-                            .setAuthentication(authenticationToken);
-                } catch (Exception e) {
-                    System.out.println(e);
-                }
+                AuthenticatedUserToken authenticationToken = new AuthenticatedUserToken(id, authorities);
+
+                SecurityContextHolder
+                        .getContext()
+                        .setAuthentication(authenticationToken);
             }
         }
 

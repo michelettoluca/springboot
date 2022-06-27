@@ -71,7 +71,7 @@ public class UserController {
     }
 
     @DeleteMapping(value = "by/id/{id}")
-    public ResponseEntity<String> deleteOne(
+    public ResponseEntity<HttpStatus> deleteOne(
             @PathVariable("id") Integer id,
             @AuthenticationPrincipal AuthenticatedUser authenticatedUser
     ) {
@@ -82,7 +82,6 @@ public class UserController {
         this.userService.deleteOneById(id);
 
         return new ResponseEntity<>(
-                "User deleted",
                 HttpStatus.OK
         );
     }

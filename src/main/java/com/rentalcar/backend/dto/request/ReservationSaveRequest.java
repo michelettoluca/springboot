@@ -7,6 +7,7 @@ import java.time.LocalDate;
 
 @Data
 public class ReservationSaveRequest {
+    private Integer id;
     private LocalDate beginsAt;
     private LocalDate endsAt;
     private ReservationStatus status;

@@ -4,6 +4,8 @@ import com.rentalcar.backend.dto.request.ReservationSaveRequest;
 import com.rentalcar.backend.entity.Reservation;
 import com.rentalcar.backend.entity.User;
 import com.rentalcar.backend.entity.Vehicle;
+import com.rentalcar.backend.exception.ReservationNotFoundException;
+import com.rentalcar.backend.exception.VehicleIsAlreadyBookedException;
 import com.rentalcar.backend.mapper.ReservationMapper;
 import com.rentalcar.backend.repository.ReservationRepository;
 import com.rentalcar.backend.service.ReservationService;
@@ -12,10 +14,12 @@ import com.rentalcar.backend.service.VehicleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.List;
 
 @RequiredArgsConstructor
 @Service
+@Transactional
 public class ReservationServiceImpl implements ReservationService {
     private final ReservationRepository reservationRepository;
     private final UserService userService;
@@ -31,7 +35,7 @@ public class ReservationServiceImpl implements ReservationService {
     public Reservation findOneById(Integer id) {
         return this.reservationRepository
                 .findById(id)
-                .orElseThrow(RuntimeException::new);
+                .orElseThrow(ReservationNotFoundException::new);
     }
 
     @Override
@@ -56,8 +60,11 @@ public class ReservationServiceImpl implements ReservationService {
     public Reservation create(ReservationSaveRequest data) {
         User user = this.userService.findOneById(data.getUserId());
         Vehicle vehicle = this.vehicleService.findOneById(data.getVehicleId());
-        
+
         Reservation reservation = ReservationMapper.toReservationEntity(data, user, vehicle);
+
+        List<Vehicle> availableVehicles = this.vehicleService.findAvailable(reservation.getBeginsAt(), reservation.getEndsAt());
+        if (!availableVehicles.contains(reservation.getVehicle())) throw new VehicleIsAlreadyBookedException();
 
         return this.reservationRepository
                 .save(reservation);
@@ -65,9 +72,8 @@ public class ReservationServiceImpl implements ReservationService {
 
     @Override
     public Reservation edit(Integer id, ReservationSaveRequest data) {
-        Reservation reservation = this.reservationRepository
-                .findById(id)
-                .orElseThrow(RuntimeException::new);
+        Reservation reservation = this.findOneById(id);
+//        this.deleteOneById(reservation.getId());
 
         if (data.getBeginsAt() != null) reservation.setBeginsAt(data.getBeginsAt());
         if (data.getEndsAt() != null) reservation.setEndsAt(data.getEndsAt());
@@ -77,7 +83,15 @@ public class ReservationServiceImpl implements ReservationService {
             reservation.setUser(user);
         }
         if (data.getVehicleId() != null) {
-            Vehicle vehicle = this.vehicleService.findOneById(data.getUserId());
+            Vehicle vehicle = this.vehicleService.findOneById(data.getVehicleId());
+
+            List<Vehicle> availableVehicles = this.vehicleService.findAvailable(
+                    data.getBeginsAt(),
+                    data.getEndsAt()
+            );
+
+            if (!availableVehicles.contains(vehicle)) throw new VehicleIsAlreadyBookedException();
+
             reservation.setVehicle(vehicle);
         }
 

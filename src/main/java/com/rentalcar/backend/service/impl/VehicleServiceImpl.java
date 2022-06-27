@@ -2,6 +2,7 @@ package com.rentalcar.backend.service.impl;
 
 import com.rentalcar.backend.dto.request.VehicleSaveRequest;
 import com.rentalcar.backend.entity.Vehicle;
+import com.rentalcar.backend.exception.VehicleNotFoundException;
 import com.rentalcar.backend.mapper.VehicleMapper;
 import com.rentalcar.backend.repository.VehicleRepository;
 import com.rentalcar.backend.repository.specification.AvailableVehicles;
@@ -33,7 +34,7 @@ public class VehicleServiceImpl implements VehicleService {
     public Vehicle findOneById(Integer id) {
         return this.vehicleRepository
                 .findById(id)
-                .orElseThrow(RuntimeException::new);
+                .orElseThrow(VehicleNotFoundException::new);
     }
 
     @Override
@@ -46,7 +47,7 @@ public class VehicleServiceImpl implements VehicleService {
     public Vehicle findOneByPlateNumber(String plateNumber) {
         return this.vehicleRepository
                 .findVehicleByPlateNumber(plateNumber)
-                .orElseThrow(RuntimeException::new);
+                .orElseThrow(VehicleNotFoundException::new);
     }
 
     @Override
@@ -59,9 +60,7 @@ public class VehicleServiceImpl implements VehicleService {
 
     @Override
     public Vehicle edit(Integer id, VehicleSaveRequest data) {
-        Vehicle vehicle = this.vehicleRepository
-                .findById(id)
-                .orElseThrow(RuntimeException::new);
+        Vehicle vehicle = this.findOneById(id);
 
         if (data.getBrand() != null) vehicle.setBrand(data.getBrand());
         if (data.getModel() != null) vehicle.setModel(data.getModel());
