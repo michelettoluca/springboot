@@ -46,6 +46,17 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler({
+            InvalidDateIntervalException.class
+    })
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    protected ResponseEntity<Object> handleInvalidDateInterval() {
+        HttpStatus status = HttpStatus.CONFLICT;
+        ErrorResponse error = new ErrorResponse("INVALID_DATE_INTERVAL", "Invalid date interval");
+
+        return new ResponseEntity<>(error, status);
+    }
+
+    @ExceptionHandler({
             UsernameTakenException.class
     })
     @ResponseStatus(HttpStatus.NOT_FOUND)

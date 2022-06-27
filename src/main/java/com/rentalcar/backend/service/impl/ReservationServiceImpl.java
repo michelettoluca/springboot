@@ -4,6 +4,7 @@ import com.rentalcar.backend.dto.request.ReservationSaveRequest;
 import com.rentalcar.backend.entity.Reservation;
 import com.rentalcar.backend.entity.User;
 import com.rentalcar.backend.entity.Vehicle;
+import com.rentalcar.backend.exception.InvalidDateIntervalException;
 import com.rentalcar.backend.exception.ReservationNotFoundException;
 import com.rentalcar.backend.exception.VehicleIsAlreadyBookedException;
 import com.rentalcar.backend.mapper.ReservationMapper;
@@ -58,6 +59,8 @@ public class ReservationServiceImpl implements ReservationService {
 
     @Override
     public Reservation create(ReservationSaveRequest data) {
+        if (data.getBeginsAt().isAfter(data.getEndsAt())) throw new InvalidDateIntervalException();
+
         User user = this.userService.findOneById(data.getUserId());
         Vehicle vehicle = this.vehicleService.findOneById(data.getVehicleId());
 
@@ -73,7 +76,6 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     public Reservation edit(Integer id, ReservationSaveRequest data) {
         Reservation reservation = this.findOneById(id);
-//        this.deleteOneById(reservation.getId());
 
         if (data.getBeginsAt() != null) reservation.setBeginsAt(data.getBeginsAt());
         if (data.getEndsAt() != null) reservation.setEndsAt(data.getEndsAt());

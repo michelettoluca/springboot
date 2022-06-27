@@ -102,17 +102,18 @@ public class ReservationController {
     }
 
     @DeleteMapping(value = "by/id/{id}")
-    public ResponseEntity<String> delete(
+    public ResponseEntity<HttpStatus> delete(
             @PathVariable("id") Integer id,
             @AuthenticationPrincipal AuthenticatedUser authenticatedUser
     ) {
-        if (!authenticatedUser.isAdmin() && !Objects.equals(authenticatedUser.getId(), id)) {
+        Reservation reservation = this.reservationService.findOneById(id);
+
+        if (!authenticatedUser.isAdmin() && !Objects.equals(authenticatedUser.getId(), reservation.getUser().getId())) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
         this.reservationService.deleteOneById(id);
 
         return new ResponseEntity<>(
-                "Reservation deleted",
                 HttpStatus.OK
         );
     }
